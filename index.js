@@ -1,4 +1,4 @@
-import React from './react';
+import React, { Component } from './react';
 import ReactDOM from './react-dom';
 
 function Home () {
@@ -7,4 +7,14 @@ function Home () {
     )
 }
 
-ReactDOM.render(<Home name="home" />, document.querySelector("#root"));
+class House extends Component {
+    constructor(props) {
+        super(props)
+    }
+
+    render() {
+        return <div>House</div>
+    }
+}
+
+ReactDOM.render(<House name="home" />, document.querySelector("#root"));

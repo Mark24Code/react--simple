@@ -1,3 +1,6 @@
+import Component from './component';
+
+
 function createElement(tag, props, ...childrens) {
     // Babel会把JSX翻译成 React.createElement，关注 .babelrc 的配置，定义了翻译头
     // 这也就是为什么出现了JSX的全局里面比如显式引入React
@@ -10,6 +13,11 @@ function createElement(tag, props, ...childrens) {
     }
 }
 
+
 export default {
     createElement,
+}
+
+export {
+    Component,
 }
