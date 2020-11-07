@@ -2,17 +2,61 @@ import Component from '../react/component'
 
 
 function renderComponent(comp) {
+    let base;
     // 统一成类组件后，调用render就返回 virtual dom
     const renderer = comp.render()
     
     // render是返回的virtual dom
     // 这里是递归调用，返回一个所有子组建的virtua dom挂载在 base属性上
-    comp.base = _render(renderer) // jsx对象
+    base = _render(renderer) // 递归执行生成的dom
+
+    if(comp.base && comp.componentWillUpdate) {
+        comp.componentWillUpdate();
+    }
+
+    if(comp.base) {
+        // 如果base已经存在了说明渲染完了
+        // 可以执行两个生命周期
+        if(comp.componentDidUpdate) {
+            comp.componentDidUpdate()
+        }
+    } else if (comp.componentDidMount) {
+        comp.componentDidMount()
+    }
+
+    // setState带来的节点替换
+    // 直接替换掉
+    if(comp.base && comp.base.parentNode) {
+        comp.base.parentNode.replaceChild(base, comp.base)
+    }
+
+    console.log(base)
+
+    comp.base = base
 }
 
 
 function setComponentProps(comp,props) {
     // comp 统一是类组建了
+    
+
+    // 如果想添加生命周期怎么办
+    // 可以选择处于中间步骤的 setComponentProps里增加
+    // 思考，通过一些特征属性来判断啥时候执行
+    // comp.base 是否存在，可以来作为执行生命周期的时机
+    // 这里适合放将要执行的
+    // # 这样其实自由度很大
+
+    if(!comp.base) {
+        if(comp.componentWillMount) {
+            // 约定接口式执行
+            // 鸭子接口
+            comp.componentWillMount()
+        } else if(comp.componentWillReceiveProps) {
+            comp.componentWillReceiveProps();
+        }
+    }
+    
     // 设置组件属性
     comp.props = props;
 
@@ -60,14 +104,18 @@ function _render(vnode) {
     // 对React的JSX对象——virtualdom 对象进行分类处理
     // 根据类型特点，生成具体的DOM节点
     // 并且生成DOM节点插入容器中，真实的渲染过程
+    if(typeof vnode === 'boolean') {
+        return document.createTextNode('')
+    }
 
-    if(vnode === undefined || vnode === null || typeof vnode === 'boolean') {
+    if(vnode === undefined || vnode === null) {
         // 更完善的补充，空和布尔值
-        return ''
+        // TODO  这里可以执行 unmount 生命周期？
+        return document.createTextNode('')
     };
 
-    if(typeof vnode === 'string') {
-        // 字符串的节点
+    if(typeof vnode === 'string' || typeof vnode === 'number') {
+        // 字符串或者数值，直接插入
         return document.createTextNode(vnode)
     }
 
@@ -109,7 +157,11 @@ function _render(vnode) {
         })
     }
 
-    childrens.forEach(child => render(child,dom))
+    if(childrens && childrens.length > 0) {
+        // fix 隐藏问题，没有children的时候不迭代
+        childrens.forEach(child => render(child, dom))
+    }
+    
 
     return dom
 }
@@ -118,6 +170,9 @@ function render(vnode, container) {
     // render负责插入具体 dom_node，这是关键的展示html步骤
     // 分成render、_render是为了解耦，
     // _render负责生成 dom_node。生存和插入分开
+    // console.log('--render--:vnode')
+    // console.log(vnode)
+    // console.log('--render--end')
     return container.appendChild(_render(vnode))
 }
 
@@ -170,4 +225,8 @@ function setAttribute (dom, key, value) {
 }
 export default  {
     render
+}
+
+export {
+    renderComponent
 }
