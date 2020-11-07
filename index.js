@@ -1,8 +1,5 @@
 import React from './react';
 import ReactDOM from './react-dom';
 
-const demo = () => (
-    <div className="active" title="123">Hello</div>
-)
 
-ReactDOM.render('demo', document.querySelector("#root"));
+ReactDOM.render(<div className="active">hello <div> <p>line1</p><p>line2</p></div></div>, document.querySelector("#root"));
